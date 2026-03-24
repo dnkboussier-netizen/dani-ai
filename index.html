@@ -1,139 +1,169 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#020f1a" id="theme-meta" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Dani AI" />
-  <title>Dani AI</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Cinzel:wght@700&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
-    :root { --c:#7c3aed; --a:#a78bfa; --g:rgba(124,58,237,0.4); --bg1:#0f0a1e; --bg2:#1a0a2e; }
-    html,body{height:100%;background:#020f1a;color:#e2e8f0;font-family:'Space Mono','Courier New',monospace;overflow:hidden;}
-    #app{height:100dvh;display:flex;flex-direction:column;background:linear-gradient(135deg,var(--bg1)0%,var(--bg2)50%,var(--bg1)100%);transition:background 0.6s ease;}
-    ::-webkit-scrollbar{width:3px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:var(--a);border-radius:2px;}
-    #header{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.06);gap:10px;}
-    #logo{font-family:'Cinzel',serif;font-size:22px;letter-spacing:0.12em;color:var(--a);text-shadow:0 0 24px var(--g);transition:color 0.4s,text-shadow 0.4s;white-space:nowrap;}
-    #install-btn{display:none;align-items:center;gap:6px;background:linear-gradient(135deg,var(--c),transparent);border:1px solid var(--a);color:var(--a);padding:7px 14px;border-radius:8px;font-family:inherit;font-size:12px;cursor:pointer;letter-spacing:0.06em;box-shadow:0 0 14px var(--g);transition:all 0.2s;white-space:nowrap;flex-shrink:0;}
-    #install-btn.visible{display:flex;} #install-btn:hover{transform:translateY(-1px);box-shadow:0 0 22px var(--g);} #install-btn:active{transform:scale(0.97);}
-    #modes{display:flex;gap:6px;padding:10px 14px;overflow-x:auto;flex-shrink:0;-webkit-overflow-scrolling:touch;scrollbar-width:none;} #modes::-webkit-scrollbar{display:none;}
-    .mode-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#666;padding:7px 13px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;letter-spacing:0.04em;white-space:nowrap;transition:all 0.2s;flex-shrink:0;}
-    .mode-btn.active{border-color:var(--a);color:var(--a);background:linear-gradient(135deg,var(--c)55,transparent);box-shadow:0 0 14px var(--g);}
-    .mode-btn:hover:not(.active){color:#aaa;border-color:rgba(255,255,255,0.2);}
-    #chat{flex:1;overflow-y:auto;padding:16px 14px;display:flex;flex-direction:column;gap:12px;}
-    #empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;opacity:0.35;text-align:center;}
-    #empty-emoji{font-size:42px;} #empty-text{font-size:13px;color:#aaa;line-height:1.6;}
-    .msg{display:flex;animation:fadeUp 0.25s ease forwards;} .msg.user{justify-content:flex-end;} .msg.assistant{justify-content:flex-start;}
-    .bubble{max-width:84%;padding:11px 15px;border-radius:14px;font-size:14px;line-height:1.75;white-space:pre-wrap;word-break:break-word;border:1px solid rgba(255,255,255,0.08);}
-    .msg.user .bubble{background:linear-gradient(135deg,var(--c)cc,var(--c)88);border-color:var(--a)44;color:#fff;border-radius:14px 14px 4px 14px;box-shadow:0 4px 18px var(--g);}
-    .msg.assistant .bubble{background:rgba(255,255,255,0.05);color:#d1d5db;border-radius:14px 14px 14px 4px;}
-    .typing{display:flex;gap:5px;align-items:center;padding:14px 18px;}
-    .dot{width:7px;height:7px;border-radius:50%;background:var(--a);animation:pulse 1.2s ease-in-out infinite;}
-    .dot:nth-child(2){animation-delay:0.2s;} .dot:nth-child(3){animation-delay:0.4s;}
-    #input-area{display:flex;gap:8px;padding:10px 14px max(14px,env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,0.06);flex-shrink:0;align-items:flex-end;}
-    #msg-input-real{flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:11px 14px;color:#e2e8f0;font-size:14px;font-family:inherit;resize:none;outline:none;line-height:1.6;max-height:120px;overflow-y:auto;transition:border-color 0.2s;}
-    #msg-input-real:focus{border-color:var(--a)88;} #msg-input-real::placeholder{color:#4a5568;}
-    #send-btn{width:46px;height:46px;background:rgba(255,255,255,0.06);border:none;border-radius:12px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0;color:#666;}
-    #send-btn.ready{background:linear-gradient(135deg,var(--c),var(--a));box-shadow:0 0 18px var(--g);color:#fff;cursor:pointer;}
-    #send-btn.ready:hover{transform:scale(1.06);} #send-btn.ready:active{transform:scale(0.96);}
-    #hint{text-align:center;font-size:10px;color:#2d3748;letter-spacing:0.08em;padding:0 14px 8px;flex-shrink:0;}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-    @keyframes pulse{0%,100%{opacity:0.3;transform:scale(0.85);}50%{opacity:1;transform:scale(1);}}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#020f1a" id="theme-meta" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Dani AI" />
+<title>Dani AI</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Cinzel:wght@700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --c: #7c3aed; --a: #a78bfa; --g: rgba(124,58,237,0.4); --bg1: #0f0a1e; --bg2: #1a0a2e; }
+  html, body { height: 100%; background: #020f1a; color: #e2e8f0; font-family: 'Space Mono', monospace; overflow: hidden; }
+  #app { height: 100dvh; display: flex; flex-direction: column; background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 50%, var(--bg1) 100%); transition: background 0.6s ease; }
+
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--a); border-radius: 2px; }
+
+  #header { padding: 14px 16px 10px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); gap: 10px; flex-shrink: 0; }
+  #logo { font-family: 'Cinzel', serif; font-size: 22px; letter-spacing: 0.12em; color: var(--a); text-shadow: 0 0 24px var(--g); transition: color 0.4s, text-shadow 0.4s; white-space: nowrap; }
+  #install-btn { display: none; align-items: center; gap: 6px; background: linear-gradient(135deg, var(--c), transparent); border: 1px solid var(--a); color: var(--a); padding: 7px 14px; border-radius: 8px; font-family: inherit; font-size: 12px; cursor: pointer; letter-spacing: 0.06em; box-shadow: 0 0 14px var(--g); transition: all 0.2s; white-space: nowrap; flex-shrink: 0; }
+  #install-btn.visible { display: flex; } #install-btn:hover { transform: translateY(-1px); box-shadow: 0 0 22px var(--g); } #install-btn:active { transform: scale(0.97); }
+
+  #modes { display: flex; gap: 6px; padding: 10px 14px; overflow-x: auto; flex-shrink: 0; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  #modes::-webkit-scrollbar { display: none; }
+  .mode-btn { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #666; padding: 7px 13px; border-radius: 8px; cursor: pointer; font-size: 12px; letter-spacing: 0.04em; white-space: nowrap; transition: all 0.2s; flex-shrink: 0; }
+  .mode-btn.active { border-color: var(--a); color: var(--a); background: linear-gradient(135deg, var(--c)55, transparent); box-shadow: 0 0 14px var(--g); }
+  .mode-btn:hover:not(.active) { color: #aaa; border-color: rgba(255,255,255,0.2); }
+
+  #chat { flex: 1; overflow-y: auto; padding: 16px 14px; display: flex; flex-direction: column; gap: 12px; }
+  #empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; opacity: 0.35; text-align: center; }
+  #empty-emoji { font-size: 42px; } #empty-text { font-size: 13px; color: #aaa; line-height: 1.6; }
+
+  .msg { display: flex; animation: fadeUp 0.25s ease forwards; }
+  .msg.user { justify-content: flex-end; }
+  .msg.assistant { justify-content: flex-start; }
+
+  .bubble { max-width: 84%; padding: 11px 15px; border-radius: 14px; font-size: 14px; line-height: 1.75; white-space: pre-wrap; word-break: break-word; border: 1px solid rgba(255,255,255,0.08); }
+  .msg.user .bubble { background: linear-gradient(135deg, var(--c)cc, var(--c)88); border-color: var(--a)44; color: #fff; border-radius: 14px 14px 4px 14px; box-shadow: 0 4px 18px var(--g); }
+  .msg.assistant .bubble { background: rgba(255,255,255,0.05); color: #d1d5db; border-radius: 14px 14px 14px 4px; }
+
+  .typing { display: flex; gap: 5px; align-items: center; padding: 14px 18px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--a); animation: pulse 1.2s ease-in-out infinite; }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+
+  #input-area { display: flex; gap: 8px; padding: 10px 14px max(14px, env(safe-area-inset-bottom)); border-top: 1px solid rgba(255,255,255,0.06); flex-shrink: 0; align-items: flex-end; }
+  #msg-input-real { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 11px 14px; color: #e2e8f0; font-size: 14px; font-family: inherit; resize: none; outline: none; line-height: 1.6; max-height: 120px; overflow-y: auto; transition: border-color 0.2s; }
+  #msg-input-real:focus { border-color: var(--a)88; }
+  #msg-input-real::placeholder { color: #4a5568; }
+
+  #send-btn { width: 46px; height: 46px; background: rgba(255,255,255,0.06); border: none; border-radius: 12px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; color: #666; }
+  #send-btn.ready { background: linear-gradient(135deg, var(--c), var(--a)); box-shadow: 0 0 18px var(--g); color: #fff; cursor: pointer; }
+  #send-btn.ready:hover { transform: scale(1.06); } #send-btn.ready:active { transform: scale(0.96); }
+
+  #hint { text-align: center; font-size: 10px; color: #2d3748; letter-spacing: 0.08em; padding: 0 14px 8px; flex-shrink: 0; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulse { 0%,100% { opacity: 0.3; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1); } }
+</style>
 </head>
 <body>
 <div id="app">
 
-  <!-- HEADER -->
   <div id="header">
     <div id="logo">⬡ DANI AI</div>
-    <div style="display:flex;gap:8px;align-items:center;">
+    <div style="display:flex; gap:8px; align-items:center;">
       <button onclick="toggleSettings()">⚙️</button>
       <button id="install-btn" onclick="installApp()"><span>⬇</span> Installeer App</button>
     </div>
   </div>
 
-  <!-- API + SETTINGS -->
-  <div id="settings" style="display:none;padding:14px;background:#050505;border-bottom:1px solid rgba(255,255,255,0.1);">
-    <input id="api-key" type="password" placeholder="Groq API Key..." style="width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:none;background:#111;color:#fff;">
-    <select id="model-select" style="width:100%;padding:10px;border-radius:8px;background:#111;color:#fff;">
+  <!-- Settings menu -->
+  <div id="settings" style="display:none; padding:14px; background:#050505; border-bottom:1px solid rgba(255,255,255,0.1);">
+    <input id="api-key" type="password" placeholder="Groq API Key..." style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; background:#111; color:#fff;" />
+    <select id="model-select" style="width:100%; padding:10px; border-radius:8px; background:#111; color:#fff;">
       <option value="llama-3.3-70b-versatile">🔥 Llama 3.3 70B (beste)</option>
       <option value="mixtral-8x7b-32768">⚡ Mixtral 8x7B (sneller)</option>
     </select>
-    <button onclick="resetKey()" style="margin-top:10px;width:100%;padding:8px;background:#300;color:#fff;border:none;border-radius:6px;">Reset API Key</button>
+    <button onclick="resetKey()" style="margin-top:10px; width:100%; padding:8px; background:#300; color:#fff; border:none; border-radius:6px;">Reset API Key</button>
   </div>
 
-  <!-- MODES + CHAT -->
   <div id="modes"></div>
-  <div id="chat"><div id="empty"><div id="empty-emoji">🌑</div><div id="empty-text">Eclipse SMP modus actief.<br/>Stel je eerste vraag!</div></div></div>
+
+  <div id="chat">
+    <div id="empty"><div id="empty-emoji">🌑</div><div id="empty-text">Eclipse SMP modus actief.<br/>Stel je eerste vraag!</div></div>
+  </div>
+
   <div id="input-area">
     <textarea id="msg-input-real" rows="1" placeholder="Vraag iets over Eclipse SMP..."></textarea>
     <button id="send-btn" onclick="send()">➤</button>
   </div>
-  <div id="hint">ENTER = verstuur • SHIFT+ENTER = nieuwe lijn</div>
+  <div id="hint">ENTER = verstuur &nbsp;•&nbsp; SHIFT+ENTER = nieuwe lijn</div>
+
 </div>
 
 <script>
-// ── MODES ──
-const MODES=[{id:"eclipse",label:"🌑 Eclipse SMP",color:"#7c3aed",accent:"#a78bfa",glow:"rgba(124,58,237,0.4)",bg1:"#0f0a1e",bg2:"#1a0a2e",system:`Je bent de Eclipse SMP AI-assistent, expert op het gebied van de Eclipse SMP Minecraft server. Je helpt met custom plugins (PaperMC, Java 21, Maven), custom wapens met abilities, custom armor sets met set bonuses, custom effecten, resource packs, en alles rond de server. Je geeft altijd volledige werkende code en bestanden. Spreek Nederlands tenzij anders gevraagd.`,placeholder:"Vraag iets over Eclipse SMP..."},
-{id:"general",label:"✨ Algemeen",color:"#0e7490",accent:"#22d3ee",glow:"rgba(14,116,144,0.4)",bg1:"#020f1a",bg2:"#041a2e",system:"Je bent een slimme, vriendelijke AI-assistent. Je helpt met van alles — vragen beantwoorden, ideeën brainstormen, code schrijven, plannen maken. Spreek Nederlands tenzij anders gevraagd.",placeholder:"Vraag me iets..."}];
+/* ── Modes setup ── */
+const MODES = [
+  {id:"eclipse", label:"🌑 Eclipse SMP", color:"#7c3aed", accent:"#a78bfa", glow:"rgba(124,58,237,0.4)", bg1:"#0f0a1e", bg2:"#1a0a2e", system:"Je bent de Eclipse SMP AI-assistent...", placeholder:"Vraag iets over Eclipse SMP..."},
+  {id:"erfgoed", label:"📖 Het Erfgoed", color:"#b45309", accent:"#fbbf24", glow:"rgba(180,83,9,0.4)", bg1:"#1a0f00", bg2:"#2d1a00", system:"Je bent de schrijfassistent voor Het Erfgoed...", placeholder:"Vraag iets over Het Erfgoed..."},
+  {id:"stitchborn", label:"🧵 StitchBorn", color:"#b91c1c", accent:"#f87171", glow:"rgba(185,28,28,0.4)", bg1:"#1a0000", bg2:"#2d0a0a", system:"Je bent game-dev assistent voor StitchBorn...", placeholder:"Vraag iets over StitchBorn..."},
+  {id:"gamebuilder", label:"🎮 Game Builder", color:"#065f46", accent:"#34d399", glow:"rgba(6,95,70,0.5)", bg1:"#000d08", bg2:"#011a10", system:"Je bent expert game-dev...", placeholder:"Beschrijf de game die je wil maken..."},
+  {id:"general", label:"✨ Algemeen", color:"#0e7490", accent:"#22d3ee", glow:"rgba(14,116,144,0.4)", bg1:"#020f1a", bg2:"#041a2e", system:"Je bent een slimme, vriendelijke AI-assistent...", placeholder:"Vraag me iets..."}
+];
 
-let activeMode=MODES[0],messages=[],loading=false,deferredPrompt=null;
+let activeMode = MODES[0];
+let messages = JSON.parse(localStorage.getItem('chat_messages')||'[]');
+let loading = false;
+let deferredPrompt = null;
 
-// ── PWA INSTALL ──
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('install-btn').classList.add('visible');});
-window.addEventListener('appinstalled',()=>{document.getElementById('install-btn').classList.remove('visible');deferredPrompt=null;});
-async function installApp(){if(!deferredPrompt){alert("Om de app te installeren:\n📱 iPhone/iPad: druk op Deel → 'Zet op beginscherm'\n🤖 Android: druk op menu → 'Toevoegen aan startscherm'\n💻 PC: klik op het installeer-icoon in de adresbalk van Chrome/Edge");return;}deferredPrompt.prompt();const{outcome}=await deferredPrompt.userChoice;if(outcome==='accepted')deferredPrompt=null;}
+/* ── PWA install ── */
+window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPrompt=e; document.getElementById('install-btn').classList.add('visible'); });
+window.addEventListener('appinstalled', ()=>{ document.getElementById('install-btn').classList.remove('visible'); deferredPrompt=null; });
+async function installApp(){ if(!deferredPrompt){ alert("Om de app te installeren..."); return; } deferredPrompt.prompt(); const {outcome}=await deferredPrompt.userChoice; if(outcome==='accepted') deferredPrompt=null; }
 
-// ── RENDER + THEME ──
-function renderModes(){document.getElementById('modes').innerHTML=MODES.map(m=>`<button class="mode-btn ${m.id===activeMode.id?'active':''}" onclick="switchMode('${m.id}')">${m.label}</button>`).join('');}
-function applyTheme(mode){const r=document.documentElement.style;r.setProperty('--c',mode.color);r.setProperty('--a',mode.accent);r.setProperty('--g',mode.glow);r.setProperty('--bg1',mode.bg1);r.setProperty('--bg2',mode.bg2);document.getElementById('theme-meta').content=mode.bg1;document.getElementById('msg-input-real').placeholder=mode.placeholder;}
-function switchMode(id){activeMode=MODES.find(m=>m.id===id);messages=[];applyTheme(activeMode);renderModes();renderChat();}
+/* ── Service Worker ── */
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 
-// ── CHAT ──
-function renderChat(){const chat=document.getElementById('chat');if(messages.length===0){chat.innerHTML=`<div id="empty"><div id="empty-emoji">${activeMode.label.split(' ')[0]}</div><div id="empty-text">${activeMode.label.slice(activeMode.label.indexOf(' ')+1)} modus actief.<br/>Stel je eerste vraag!</div></div>`;return;}chat.innerHTML=messages.map((m,i)=>`<div class="msg ${m.role}" style="animation-delay:${i*0.03}s"><div class="bubble">${escapeHtml(m.content)}</div></div>`).join('');if(loading){chat.innerHTML+=`<div class="msg assistant"><div class="bubble typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>`;}chat.scrollTop=chat.scrollHeight;}
-function escapeHtml(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+/* ── Render Modes ── */
+function renderModes(){ const container=document.getElementById('modes'); container.innerHTML=MODES.map(m=>`<button class="mode-btn ${m.id===activeMode.id?'active':''}" onclick="switchMode('${m.id}')">${m.label}</button>`).join(''); }
 
-// ── SEND ──
-async function send(){const input=document.getElementById('msg-input-real');const apiKey=document.getElementById('api-key').value.trim();const text=input.value.trim();if(!text||loading)return;if(!apiKey){alert("Voer eerst je Groq API key in!");return;}input.value='';input.style.height='auto';updateSendBtn();messages.push({role:'user',content:text});loading=true;renderChat();try{const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},body:JSON.stringify({model:document.getElementById('model-select').value,messages:[{role:"system",content:activeMode.system},...messages]})});const data=await res.json();const reply=data.choices?.[0]?.message?.content||'Er ging iets mis.';messages.push({role:'assistant',content:reply});saveChatMemory();}catch(err){messages.push({role:'assistant',content:'❌ Fout bij verbinden met Groq API.'});}loading=false;renderChat();}
+/* ── Apply theme ── */
+function applyTheme(mode){ const r=document.documentElement.style; r.setProperty('--c',mode.color); r.setProperty('--a',mode.accent); r.setProperty('--g',mode.glow); r.setProperty('--bg1',mode.bg1); r.setProperty('--bg2',mode.bg2); document.getElementById('theme-meta').content=mode.bg1; document.getElementById('msg-input-real').placeholder=mode.placeholder; }
 
-// ── INPUT RESIZE + BUTTON ──
-const inputEl=document.getElementById('msg-input-real');
-inputEl.addEventListener('input',()=>{inputEl.style.height='auto';inputEl.style.height=Math.min(inputEl.scrollHeight,120)+'px';updateSendBtn();});
-inputEl.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
-function updateSendBtn(){const btn=document.getElementById('send-btn');const hasText=inputEl.value.trim().length>0;btn.classList.toggle('ready',hasText&&!loading);btn.textContent=loading?'⏳':'➤';}
+/* ── Switch Mode ── */
+function switchMode(id){ activeMode=MODES.find(m=>m.id===id); messages=[]; applyTheme(activeMode); renderModes(); renderChat(); }
 
-// ── CHAT GEHEUGEN ──
-function saveChatMemory(){localStorage.setItem('chat_memory',JSON.stringify(messages));}
-function loadChatMemory(){const saved=localStorage.getItem('chat_memory');if(saved){messages=JSON.parse(saved);renderChat();}}
-loadChatMemory();
-
-// ── VOICE INPUT ──
-if('webkitSpeechRecognition' in window||'SpeechRecognition' in window){
-  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-  const recognition=new SpeechRecognition();
-  recognition.continuous=false;recognition.interimResults=false;recognition.lang='nl-NL';
-  recognition.onresult=e=>{inputEl.value=e.results[0][0].transcript;updateSendBtn();};
-  recognition.onerror=e=>{console.log('Voice error',e);};
-  inputEl.addEventListener('keydown',e=>{if(e.key==='v'&&e.ctrlKey){recognition.start();}});
+/* ── Render Chat ── */
+function renderChat(){
+  const chat=document.getElementById('chat');
+  if(messages.length===0){ chat.innerHTML=`<div id="empty"><div id="empty-emoji">${activeMode.label.split(' ')[0]}</div><div id="empty-text">${activeMode.label.slice(activeMode.label.indexOf(' ')+1)} modus actief.<br/>Stel je eerste vraag!</div></div>`; return; }
+  chat.innerHTML=messages.map((m,i)=>`<div class="msg ${m.role}" style="animation-delay:${i*0.03}s"><div class="bubble">${m.content}</div></div>`).join('');
+  if(loading){ chat.innerHTML+=`<div class="msg assistant"><div class="bubble typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>`; }
+  chat.scrollTop=chat.scrollHeight;
+  localStorage.setItem('chat_messages', JSON.stringify(messages));
 }
 
-// ── SETTINGS TOGGLE + AUTOSAVE ──
-function toggleSettings(){const el=document.getElementById('settings');el.style.display=el.style.display==='none'?'block':'none';}
-function resetKey(){localStorage.removeItem('groq_api_key');document.getElementById('api-key').value='';}
-const apiInput=document.getElementById('api-key');const modelSelect=document.getElementById('model-select');
-const savedKey=localStorage.getItem('groq_api_key');if(savedKey)apiInput.value=savedKey;
-apiInput.addEventListener('input',()=>{localStorage.setItem('groq_api_key',apiInput.value);});
-const savedModel=localStorage.getItem('groq_model');if(savedModel)modelSelect.value=savedModel;
-modelSelect.addEventListener('change',()=>{localStorage.setItem('groq_model',modelSelect.value);});
+/* ── Send ── */
+async function send(){
+  const input=document.getElementById('msg-input-real');
+  const apiKey=document.getElementById('api-key').value.trim();
+  const text=input.value.trim();
+  if(!text||loading) return;
+  if(!apiKey){ alert("Voer eerst je Groq API key in!"); return; }
+  input.value=''; input.style.height='auto'; updateSendBtn();
+  messages.push({role:'user', content:text}); loading=true; renderChat();
+  try{
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body:JSON.stringify({ model:document.getElementById('model-select').value, messages:[{role:"system",content:activeMode.system}, ...messages]})
+    });
+    const data=await res.json();
+    const reply=data.choices?.[0]?.message?.content || 'Er ging iets mis.';
+    messages.push({role:'assistant', content:reply});
+  }catch(e){ messages.push({role:'assistant', content:'❌ Fout bij verbinden met Groq API.'}); }
+  loading=false; renderChat();
+}
 
-// ── INIT ──
-applyTheme(activeMode);renderModes();renderChat();
-</script>
-</body>
-</html>
+/* ── Input auto-resize + send btn ── */
+const inputEl=document.getElementById('msg-input-real');
+inputEl.addEventListener('input', ()=>{ inputEl.style.height='auto'; inputEl.style.height=Math.min(inputEl.scrollHeight,120)+'px'; updateSendBtn(); });
+inputEl.addEventListener('keydown', e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); send(); } });
+function updateSendBtn(){ const btn=document.getElementById('send-btn'); const hasText=inputEl.value.trim().length>0; btn.classList.toggle('ready',hasText&&!loading); btn.textContent=loading?'⏳':'
